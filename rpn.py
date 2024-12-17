@@ -72,17 +72,18 @@ class RPN:
         self.infix = infix
         self.variables = {}
         self.rpn = self.parser(infix)
+        self.parseVariables()
         self.lastEvaluation = ""
-        None
+        self.testMat = self.rpn.split(" ")
     
     def parser(self,exp=""):
         if exp == "":
             exp = self.infix
         opStack = []
         constStack = ""
-        numberBuffer = ""
         for c in exp:
             if isOperator(c) == 0:
+                constStack += " "
                 if c == ")":
                     popping = True
                     while popping == True and len(opStack) > 0:
@@ -97,9 +98,9 @@ class RPN:
                         print("Mismatched Parenthesis!")
                         return ""
                     continue
+                
 
                 popping = True
-                n = 0
                 while popping and len(opStack) > 0:
                     p = compare_precedence(c,opStack[len(opStack)-1])
                     if (p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "(":
@@ -123,13 +124,12 @@ class RPN:
                 print("Mismatched paranthesis!")
                 return ""
             constStack += " " + i
-        self.parseVariables(constStack)
+
         return constStack
         
     
-    def parseVariables(self,exp:str): # Used to identify the unknowns
-        
-        for i in exp:
+    def parseVariables(self): # Used to identify the unknowns
+        for i in self.rpn:
             if i == " ":
                 continue
             if isOperator(i) == 1 and i.isnumeric() == False:
@@ -142,7 +142,6 @@ class RPN:
         temp = ""
         output = ""
         numberBuffer = ""
-        uncalculatedVar = 0
         for i in exp:
             
             SmartDisp(temp,constStack,i)
@@ -158,7 +157,6 @@ class RPN:
                     elif i != " ":
                         numberBuffer += i
                 elif i.isalpha() and i != " ":
-                    uncalculatedVar += 1
                     constStack.append(i)
             elif isOperator(i) == 0:
                 print("Number  buffer is:",numberBuffer,"end")
@@ -176,10 +174,8 @@ class RPN:
                 x = constStack[n-1] 
                 y = constStack[n]
                 if self.variables.get(x) != None:
-                    uncalculatedVar -= 1
                     x = self.variables.get(x)
                 if self.variables.get(y) != None:
-                    uncalculatedVar -= 1
                     y = self.variables.get(y)
                 if x.isalpha() or y.isalpha():
                     output += " ".join(constStack) + " " + i # Add the buffer to the output variable as this cant be computed for now
@@ -199,16 +195,9 @@ class RPN:
             output += " " + constStack[0]
         elif len(constStack) > 1:
             print("Calculation error!")
-        self.lastEvaluation = output
+        self.lastEvaluation = float(output)
 
 
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
 
-
-
-
-e = RPN("9 + y / 2")
-e.variables.update({"y":"9"})
-e.evaluate()
-print(e.lastEvaluation)
