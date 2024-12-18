@@ -56,14 +56,14 @@ class TestParser(unittest.TestCase):
         print("Testing Parser")
         for k,v in self.infix_to_rpn.items():
             e = RPN(k)
-            print(e)
-            self.assertEqual(e.testMat,v)
+            print(e.rpn)
+            self.assertEqual(e.rpn,v)
     def testEval(self):
         print("Testing Evaluations`")
         for k,v in self.infix_to_result.items():
             e = RPN(k)
             print(f"Evaluating {k}")
-            print(e.testMat)
+            print(e.rpn)
             e.alternateEval()
             self.assertAlmostEqual(e.lastEvaluation,v,4)
     def testVar(self):

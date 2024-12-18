@@ -83,9 +83,6 @@ class RPN:
         self.rpn = self.parser(infix)
         self.parseVariables()
         self.lastEvaluation = ""
-        self.testMat = self.rpn.split(" ")
-        while "" in self.testMat:
-            self.testMat.remove("")
         self.unresolvedEval = ""
         self.resolved = True
     
@@ -93,16 +90,19 @@ class RPN:
         if exp == "":
             exp = self.infix
         opStack = []
-        constStack = ""
+        altStack = []
+        numBuf = ""
         for c in exp:
             if isOperator(c) == 0:
-                constStack += ""
+                if numBuf != "":
+                    altStack.append(numBuf)
+                    numBuf = ""
                 if c == ")":
                     popping = True
                     while popping == True and len(opStack) > 0:
                         current = opStack[len(opStack)-1]
                         if current != "(":
-                            constStack += " "+ current 
+                            altStack.append(current) 
                             opStack.pop()
                         elif current == "(":
                             opStack.pop()
@@ -117,41 +117,39 @@ class RPN:
                 while popping and len(opStack) > 0:
                     p = compare_precedence(c,opStack[len(opStack)-1])
                     if (p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "(":
-                        constStack += " " + opStack[len(opStack)-1]
-                        opStack.pop()
+                        altStack.append(opStack.pop())
                     else:
                         opStack.append(c)
                         popping = False
                 if len(opStack) < 1:
                     opStack.append(c) 
             else:
-                constStack += c
-                # if c == " " and numberBuffer != "":
-                #     constStack += numberBuffer + " "
-                #     numberBuffer = "" 
-                # elif c != " ":
-                #     numberBuffer += c
-            #SmartDisp(opStack,constStack,c)
+                if c == " " and numBuf == "":
+                    continue
+                elif c == " " and numBuf != "":
+                    altStack.append(numBuf)
+                    numBuf = ""
+                elif c != " ":
+                    numBuf += c
+        if numBuf != "":
+            altStack.append(numBuf)
         for i in reversed(opStack):
             if i in "()":
                 print("Mismatched paranthesis!")
                 return ""
-            constStack += " " + i
-
-        return constStack
+            altStack.append(i)
+        return altStack
         
     
     def parseVariables(self): # Used to identify the unknowns
         for i in self.rpn:
-            if i == " ":
-                continue
             if isOperator(i) == 1 and i.isnumeric() == False:
                 self.variables.update({i:None})
 
     def alternateEval(self):
         constStack = []
         output = ""
-        for i in self.testMat:
+        for i in self.rpn:
             if isOperator(i) == 1:
                 constStack.append(i)
             elif isOperator(i) == 0:
@@ -249,6 +247,5 @@ class RPN:
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
 
-e = RPN("a + 5")
-e.alternateEval()
-print(e.unresolvedEval)
+e = RPN("9 + 2 * 5")
+print(e.rpn)
