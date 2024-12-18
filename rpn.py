@@ -1,3 +1,12 @@
+
+"""
+
+
+
+
+"""
+
+
 def isOperator(c:str):
     match c:
         case '+':
@@ -75,6 +84,10 @@ class RPN:
         self.parseVariables()
         self.lastEvaluation = ""
         self.testMat = self.rpn.split(" ")
+        while "" in self.testMat:
+            self.testMat.remove("")
+        self.unresolvedEval = ""
+        self.resolved = True
     
     def parser(self,exp=""):
         if exp == "":
@@ -83,7 +96,7 @@ class RPN:
         constStack = ""
         for c in exp:
             if isOperator(c) == 0:
-                constStack += " "
+                constStack += ""
                 if c == ")":
                     popping = True
                     while popping == True and len(opStack) > 0:
@@ -135,6 +148,45 @@ class RPN:
             if isOperator(i) == 1 and i.isnumeric() == False:
                 self.variables.update({i:None})
 
+    def alternateEval(self):
+        constStack = []
+        output = ""
+        for i in self.testMat:
+            if isOperator(i) == 1:
+                constStack.append(i)
+            elif isOperator(i) == 0:
+                if len(constStack) == 0:
+                    print("Calculation error.")
+                    self.lastEvaluation = None
+                    return
+
+                x = constStack.pop()
+                y = constStack.pop()
+
+                if self.variables.get(x) != None:
+                    x = self.variables.get(x)
+                if self.variables.get(y) != None:
+                    y = self.variables.get(y)
+                
+                if x.isalpha() or y.isalpha():
+                    output += " ".join(constStack)+ " ".join([x,y]) + " " + i # Add the buffer to the output variable as this cant be computed for now
+                    # constStack.pop()
+                    # constStack.pop()
+                    constStack = []
+                    self.resolved = False
+                    continue
+                res = performBasic(y,x,i)
+                print("RES:",res)
+                constStack.append(str(res))
+        
+        if self.resolved == True:
+            self.lastEvaluation = float(constStack[0])
+            self.unresolvedEval = ""
+        elif self.resolved == False:
+            self.lastEvaluation = None
+            self.unresolvedEval = output + " " +  str(constStack)
+
+
     def evaluate(self,exp=None):
         if exp == None:
             exp = self.rpn
@@ -144,7 +196,6 @@ class RPN:
         numberBuffer = ""
         for i in exp:
             
-            SmartDisp(temp,constStack,i)
             n = len(constStack)-1
             temp += i
             if n+1 >= 2:
@@ -159,7 +210,6 @@ class RPN:
                 elif i.isalpha() and i != " ":
                     constStack.append(i)
             elif isOperator(i) == 0:
-                print("Number  buffer is:",numberBuffer,"end")
                 if (len(constStack) < 2) and numberBuffer == "": # Not enough variables to compute, thus add these to the output as well
                     output += " " +  " ".join(constStack) + " " + numberBuffer + i
                     temp = ""
@@ -170,7 +220,6 @@ class RPN:
                     output += " ".join(constStack) + numberBuffer 
                     numberBuffer = ""
                     continue
-                print("CALCULATING")
                 x = constStack[n-1] 
                 y = constStack[n]
                 if self.variables.get(x) != None:
@@ -190,7 +239,6 @@ class RPN:
                 constStack.pop()
                 constStack.pop()
                 constStack.append(res)
-        print("(",output,")","+",constStack)
         if  len(constStack) == 1: # Merge the uncomputed with the computed values
             output += " " + constStack[0]
         elif len(constStack) > 1:
@@ -201,3 +249,6 @@ class RPN:
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
 
+e = RPN("a + 5")
+e.alternateEval()
+print(e.unresolvedEval)
