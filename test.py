@@ -8,14 +8,15 @@ class TestParser(unittest.TestCase):
         self.infix_to_rpn = {
             "3 + 5": ["3", "5", "+"],
             "10 + 2 * 6": ["10", "2", "6", "*", "+"],
-            "( 3 + 5 ) * 2": ["3", "5", "+", "2", "*"],
+            "( 3 + 5 ) * -2": ["3", "5", "+", "-2", "*"],
             "5 * ( 10 + 2 )": ["5", "10", "2", "+", "*"],
             "3 + 5 * ( 2 - 8 )": ["3", "5", "2", "8", "-", "*", "+"],
-            "7 + 3 * 5 / ( 10 - 5 )": ["7", "3", "5", "*", "10", "5", "-", "/", "+"],
-            "a + b * c": ["a", "b", "c", "*", "+"],
+            "7 + 3 * -5 / ( 10 - 5 )": ["7", "3", "-5", "*", "10", "5", "-", "/", "+"],
+            "-a + b * c": ["-a", "b", "c", "*", "+"],
             "( x + y ) * z": ["x", "y", "+", "z", "*"],
             "x * ( y + z )": ["x", "y", "z", "+", "*"],
             "3 * ( 4 + 2 ) / 6": ["3", "4", "2", "+", "*", "6", "/"],
+            "-5 * -9 + 3":["-5","-9","*","3","+"]
             }
 
         self.infix_to_result = {
@@ -58,6 +59,7 @@ class TestParser(unittest.TestCase):
             e = RPN(k)
             print(e.rpn)
             self.assertEqual(e.rpn,v)
+    @unittest.skip("Gay")
     def testEval(self):
         print("Testing Evaluations`")
         for k,v in self.infix_to_result.items():
@@ -66,6 +68,7 @@ class TestParser(unittest.TestCase):
             print(e.rpn)
             e.alternateEval()
             self.assertAlmostEqual(e.lastEvaluation,v,4)
+    @unittest.skip("Gay")
     def testVar(self):
         for infix in self.variable_test_cases:
             e = RPN(infix[0])

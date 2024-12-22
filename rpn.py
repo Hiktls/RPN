@@ -92,8 +92,18 @@ class RPN:
         opStack = []
         altStack = []
         numBuf = ""
+        doubleOp = False
         for c in exp:
+            if doubleOp == True and c == "-":
+                numBuf += c
+                continue
+            elif c == "-" and opStack == [] and numBuf == "" and altStack == []:
+                numBuf += c
+                continue
+                
+
             if isOperator(c) == 0:
+                doubleOp = True
                 if numBuf != "":
                     altStack.append(numBuf)
                     numBuf = ""
@@ -130,6 +140,7 @@ class RPN:
                     altStack.append(numBuf)
                     numBuf = ""
                 elif c != " ":
+                    doubleOp = False
                     numBuf += c
         if numBuf != "":
             altStack.append(numBuf)
@@ -246,6 +257,3 @@ class RPN:
 
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
-
-e = RPN("9 + 2 * 5")
-print(e.rpn)
