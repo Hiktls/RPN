@@ -1,17 +1,27 @@
+# Start work on trigonometric functions
+import math
 def isOperator(c:str):
     if c in "+-*/()^":
         return 0
     return 1
 
+def isFunction(c:str):
+    if c in "sin cos tan asin acos atan".split(" "):
+        return True
+    return False
 def compare_precedence(op1, op2):
+    print("Comparing: ",op1,op2)
     # Define operator precedence levels
     precedence = {
-        '(': 0, ')': 0,  # Parentheses for completeness, precedence is handled separately in expressions
-        '+': 1, '-': 1,  # Addition and subtraction
-        '*': 2, '/': 2, '%': 2,  # Multiplication, division, and modulus
-        '^': 3,  # Exponentiation
-        '//': 2,  # Floor division
-    }
+    '(': 0, ')': 0,  # Parentheses
+    '+': 1, '-': 1,  # Addition and subtraction
+    '*': 2, '/': 2, '%': 2,  # Multiplication, division, modulus
+    '//': 2,  # Floor division
+    '^': 3,  # Exponentiation
+    'sin': 4, 'cos': 4, 'tan': 4,  # Trigonometric functions
+    'asin': 4, 'acos': 4, 'atan': 4,  # Inverse trigonometric functions
+}
+
     
     # Check if both operators are valid
     if op1 not in precedence or op2 not in precedence:
@@ -46,6 +56,18 @@ def performBasic(x,y,op):
             return str(x / y)
         case "^":
             return str(x**y)
+        case "sin":
+            return math.sin(y)
+        case "cos":
+            return math.cos(y)
+        case "tan":
+            return math.tan(y)
+        case "asin":
+            return math.asin(y)
+        case "acos":
+            return math.acos(y)
+        case "atan":
+            return math.atan(y)
 
 class RPN:
     def __init__(self,infix:str):
@@ -65,6 +87,7 @@ class RPN:
         numBuf = ""
         doubleOp = False
         for c in exp:
+            SmartDisp(opStack,altStack,c)
             if doubleOp == True and c == "-":
                 numBuf += c
                 continue
@@ -72,12 +95,16 @@ class RPN:
                 numBuf += c
                 continue
                 
-
-            if isOperator(c) == 0:
+            isFunc = isFunction(numBuf+c)
+            if isOperator(c) == 0 or isFunc:
+                if isFunc:
+                    c = numBuf+c
+                    numBuf = ""
                 doubleOp = True
-                if numBuf != "":
+                if numBuf != "" and not isFunc:
                     altStack.append(numBuf)
                     numBuf = ""
+                
                 if c == ")":
                     popping = True
                     while popping == True and len(opStack) > 0:
@@ -132,14 +159,39 @@ class RPN:
         constStack = []
         output = ""
         for i in self.rpn:
-            if isOperator(i) == 1:
+            if isOperator(i) == 1 and not isFunction(i):
                 constStack.append(i)
-            elif isOperator(i) == 0:
+            elif isOperator(i) == 0 or isFunction(i):
                 if len(constStack) == 0:
                     print("Calculation error.")
                     self.lastEvaluation = None
                     return
 
+                if isFunction(i):
+                    x = constStack.pop()
+                    a = ""
+                    if "-" in x:
+                        a = "-"
+                    if self.variables.get(x) != None:
+                        x = a+self.variables.get(x)
+                    
+                    if x.isalpha() or y.isalpha():
+                        output += " ".join(constStack)+ " ".join([x]) + " " + i # Add the buffer to the output variable as this cant be computed for now
+                        # constStack.pop()
+                        # constStack.pop()
+                        constStack = []
+                        self.resolved = False
+                        continue
+                    try:
+                        res = performBasic(0,x,i)
+                    except ValueError as e:
+                        print("Error: ",e)
+                        self.lastEvaluation = None
+                        self.resolved = False
+                        self.unresolvedEval = self.rpn
+                        return
+                    constStack.append(str(res))
+                    continue
                 x = constStack.pop()
                 y = constStack.pop()
                 a = ""
@@ -162,7 +214,6 @@ class RPN:
                     self.resolved = False
                     continue
                 res = performBasic(y,x,i)
-                print("RES:",res)
                 constStack.append(str(res))
         
         if self.resolved == True:
@@ -174,7 +225,7 @@ class RPN:
 
     def evaluate(self,exp=None):
         print("WARNING: This version of the evaluation engine is being deprecated and will not work with default parsed expressions. Use alternateEval unless you know what you are doing.")
-
+        return
         if exp == None:
             exp = self.rpn
         constStack = []
@@ -235,4 +286,5 @@ class RPN:
 
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
+
 
