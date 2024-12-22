@@ -195,7 +195,7 @@ class RPN:
             self.lastEvaluation = None
             self.unresolvedEval = output + " " +  str(constStack)
 
-
+    @DeprecationWarning
     def evaluate(self,exp=None):
         if exp == None:
             exp = self.rpn
