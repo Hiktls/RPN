@@ -6,7 +6,7 @@ def isOperator(c:str):
     return 1
 
 def isFunction(c:str):
-    if c in "sin cos tan asin acos atan".split(" "):
+    if c in "sin cos tan asin acos atan log abs sqrt".split(" "):
         return True
     return False
 def compare_precedence(op1, op2):
@@ -17,8 +17,11 @@ def compare_precedence(op1, op2):
     '*': 2, '/': 2, '%': 2,  # Multiplication, division, modulus
     '//': 2,  # Floor division
     '^': 3,  # Exponentiation
+    "sqrt":3,
     'sin': 4, 'cos': 4, 'tan': 4,  # Trigonometric functions
     'asin': 4, 'acos': 4, 'atan': 4,  # Inverse trigonometric functions
+    'log': 4,  # Logarithm
+    'abs': 4,  # Absolute value
 }
 
     
@@ -67,6 +70,12 @@ def performBasic(x,y,op):
             return math.acos(y)
         case "atan":
             return math.atan(y)
+        case "log":
+            return math.log10(y)
+        case "abs":
+            return math.fabs(y)
+        case "sqrt":
+            return math.sqrt(y)
 
 class RPN:
     def __init__(self,infix:str):
@@ -122,7 +131,7 @@ class RPN:
                 popping = True
                 while popping and len(opStack) > 0:
                     p = compare_precedence(c,opStack[len(opStack)-1])
-                    if (p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "(":
+                    if (p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "(" and not isFunc:
                         altStack.append(opStack.pop())
                     else:
                         opStack.append(c)
