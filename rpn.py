@@ -10,7 +10,6 @@ def isFunction(c:str):
         return True
     return False
 def compare_precedence(op1, op2):
-    print("Comparing: ",op1,op2)
     # Define operator precedence levels
     precedence = {
     '(': 0, ')': 0,  # Parentheses
@@ -87,7 +86,6 @@ class RPN:
         numBuf = ""
         doubleOp = False
         for c in exp:
-            SmartDisp(opStack,altStack,c)
             if doubleOp == True and c == "-":
                 numBuf += c
                 continue
@@ -152,7 +150,7 @@ class RPN:
     
     def parseVariables(self): # Used to identify the unknowns
         for i in self.rpn:
-            if isOperator(i) == 1 and i.isnumeric() == False:
+            if isOperator(i) == 1 and i.isnumeric() == False and not isFunction(i):
                 self.variables.update({i:None})
 
     def alternateEval(self):
@@ -175,7 +173,7 @@ class RPN:
                     if self.variables.get(x) != None:
                         x = a+self.variables.get(x)
                     
-                    if x.isalpha() or y.isalpha():
+                    if x.isalpha():
                         output += " ".join(constStack)+ " ".join([x]) + " " + i # Add the buffer to the output variable as this cant be computed for now
                         # constStack.pop()
                         # constStack.pop()
@@ -286,5 +284,4 @@ class RPN:
 
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
-
 
