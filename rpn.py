@@ -1,34 +1,8 @@
-
-"""
-
-
-
-
-"""
-
-
 def isOperator(c:str):
-    match c:
-        case '+':
-            return 0
-        case '-':
-            return 0
-        case '*':
-            return 0
-        case '/':
-            return 0
-        case '(':
-            return 0
-        case ')':
-            return 0
-        case '^':
-            return 0
-        case _:
-            return 1
- 
+    if c in "+-*/()^":
+        return 0
+    return 1
 
-        
-            
 def compare_precedence(op1, op2):
     # Define operator precedence levels
     precedence = {
@@ -57,9 +31,6 @@ def SmartDisp(op,cons,c):
     print("Current cons stack:",cons)
     print("Current i:",c)
     
-
-
-        
 
 def performBasic(x,y,op):
     x = float(x)
@@ -171,11 +142,17 @@ class RPN:
 
                 x = constStack.pop()
                 y = constStack.pop()
+                a = ""
+                b = ""
+                if "-" in x:
+                    a = "-"
+                if "-" in y:
+                    b = "-"
 
                 if self.variables.get(x) != None:
-                    x = self.variables.get(x)
+                    x = a+self.variables.get(x) 
                 if self.variables.get(y) != None:
-                    y = self.variables.get(y)
+                    y = b+self.variables.get(y) 
                 
                 if x.isalpha() or y.isalpha():
                     output += " ".join(constStack)+ " ".join([x,y]) + " " + i # Add the buffer to the output variable as this cant be computed for now
@@ -195,8 +172,9 @@ class RPN:
             self.lastEvaluation = None
             self.unresolvedEval = output + " " +  str(constStack)
 
-    @DeprecationWarning
     def evaluate(self,exp=None):
+        print("WARNING: This version of the evaluation engine is being deprecated and will not work with default parsed expressions. Use alternateEval unless you know what you are doing.")
+
         if exp == None:
             exp = self.rpn
         constStack = []
@@ -257,3 +235,4 @@ class RPN:
 
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
+
