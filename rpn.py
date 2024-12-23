@@ -1,5 +1,6 @@
 # Start work on trigonometric functions
 import math
+
 def isOperator(c:str):
     if c in "+-*/()^":
         return 0
@@ -7,7 +8,7 @@ def isOperator(c:str):
 
 def isFunction(c:str):
     if c in "sin cos tan asin acos atan log abs sqrt".split(" "):
-        return True
+        return True 
     return False
 def compare_precedence(op1, op2):
     # Define operator precedence levels
@@ -80,10 +81,11 @@ def performBasic(x,y,op):
 class RPN:
     def __init__(self,infix:str):
         self.infix = infix
-        self.variables = {}
         self.rpn = self.parser(infix)
+        self.variables = {}
         self.parseVariables()
-        self.lastEvaluation = ""
+
+        self.lastEvaluation = None
         self.unresolvedEval = ""
         self.resolved = True
     
@@ -95,6 +97,8 @@ class RPN:
         numBuf = ""
         doubleOp = False
         for c in exp:
+            SmartDisp(opStack,altStack,c)
+            print(doubleOp)
             if doubleOp == True and c == "-":
                 numBuf += c
                 continue
@@ -107,31 +111,33 @@ class RPN:
                 if isFunc:
                     c = numBuf+c
                     numBuf = ""
-                doubleOp = True
                 if numBuf != "" and not isFunc:
                     altStack.append(numBuf)
                     numBuf = ""
                 
                 if c == ")":
+                    print("Will pop")
                     popping = True
                     while popping == True and len(opStack) > 0:
-                        current = opStack[len(opStack)-1]
+                        current = opStack.pop()
+                        print(current)
                         if current != "(":
                             altStack.append(current) 
-                            opStack.pop()
                         elif current == "(":
-                            opStack.pop()
                             popping = False
                     if popping == True and len(opStack) == 0:
                         print("Mismatched Parenthesis!")
-                        return ""
+                        return []
                     continue
                 
+                doubleOp = True
 
                 popping = True
                 while popping and len(opStack) > 0:
                     p = compare_precedence(c,opStack[len(opStack)-1])
-                    if (p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "(" and not isFunc:
+                    print(p)
+                    if ((p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "("):
+                        print("This happens")
                         altStack.append(opStack.pop())
                     else:
                         opStack.append(c)
@@ -294,3 +300,7 @@ class RPN:
     def __str__(self):
         return self.infix + " , [" + self.rpn + "]"
 
+e = RPN("sin(90) - 1")
+print(e.rpn)
+e.alternateEval()
+print(e.lastEvaluation)

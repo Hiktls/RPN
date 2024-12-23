@@ -7,6 +7,7 @@ while True:
         break
     rpn = RPN(exp)
     if rpn.variables != {}:
+        print(rpn.variables)
         print("Variables found. You may add variable definitions in the form 'x = 5'. Type 'done' when done with definitions.")
         while True:
             var = input("$")
