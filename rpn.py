@@ -78,8 +78,10 @@ def performBasic(x,y,op):
         case "sqrt":
             return math.sqrt(y)
 
-class RPN:
+class Expression:
     def __init__(self,infix:str):
+        if infix == "":
+            return
         self.infix = infix
         self.rpn = self.parser(infix)
         self.variables = {}
@@ -97,13 +99,15 @@ class RPN:
         numBuf = ""
         doubleOp = False
         for c in exp:
-            SmartDisp(opStack,altStack,c)
-            print(doubleOp)
             if doubleOp == True and c == "-":
                 numBuf += c
                 continue
             elif c == "-" and opStack == [] and numBuf == "" and altStack == []:
                 numBuf += c
+                continue
+            elif doubleOp == True and c == "+":
+                continue
+            elif c == "+" and opStack == [] and numBuf == "" and altStack == []:
                 continue
                 
             isFunc = isFunction(numBuf+c)
@@ -116,11 +120,9 @@ class RPN:
                     numBuf = ""
                 
                 if c == ")":
-                    print("Will pop")
                     popping = True
                     while popping == True and len(opStack) > 0:
                         current = opStack.pop()
-                        print(current)
                         if current != "(":
                             altStack.append(current) 
                         elif current == "(":
@@ -135,9 +137,7 @@ class RPN:
                 popping = True
                 while popping and len(opStack) > 0:
                     p = compare_precedence(c,opStack[len(opStack)-1])
-                    print(p)
                     if ((p == 0 and c != "^" and c != "(") or (p == -1 and c != "^") and c != "("):
-                        print("This happens")
                         altStack.append(opStack.pop())
                     else:
                         opStack.append(c)
@@ -165,12 +165,13 @@ class RPN:
     
     def parseVariables(self): # Used to identify the unknowns
         for i in self.rpn:
+            i = i.replace("-","")
             if isOperator(i) == 1 and i.isnumeric() == False and not isFunction(i):
                 self.variables.update({i:None})
 
     def alternateEval(self):
         constStack = []
-        output = ""
+        output = []
         for i in self.rpn:
             if isOperator(i) == 1 and not isFunction(i):
                 constStack.append(i)
@@ -179,9 +180,16 @@ class RPN:
                     print("Calculation error.")
                     self.lastEvaluation = None
                     return
+                elif len(constStack) == 1 and not isFunction(i):
+                    output += constStack
+                    output.append(i)
+                    constStack = []
+                    self.resolved = False
+                    continue
 
                 if isFunction(i):
                     x = constStack.pop()
+                    SmartDisp(x,i,constStack)
                     a = ""
                     if "-" in x:
                         a = "-"
@@ -189,9 +197,9 @@ class RPN:
                         x = a+self.variables.get(x)
                     
                     if x.isalpha():
-                        output += " ".join(constStack)+ " ".join([x]) + " " + i # Add the buffer to the output variable as this cant be computed for now
-                        # constStack.pop()
-                        # constStack.pop()
+                        output += constStack  # Add the buffer to the output variable as this cant be computed for now
+                        output.append(x)
+                        output.append(i)
                         constStack = []
                         self.resolved = False
                         continue
@@ -220,9 +228,8 @@ class RPN:
                     y = b+self.variables.get(y) 
                 
                 if x.isalpha() or y.isalpha():
-                    output += " ".join(constStack)+ " ".join([x,y]) + " " + i # Add the buffer to the output variable as this cant be computed for now
-                    # constStack.pop()
-                    # constStack.pop()
+                    output += constStack # Add the buffer to the output variable as this cant be computed for now
+                    output += [x,y,i]
                     constStack = []
                     self.resolved = False
                     continue
@@ -234,8 +241,19 @@ class RPN:
             self.unresolvedEval = ""
         elif self.resolved == False:
             self.lastEvaluation = None
-            self.unresolvedEval = output + " " +  str(constStack)
+            self.unresolvedEval = output + constStack
+    
+    def from_rpn(self,rpn:list[str]):
+        self.infix = ""
+        self.rpn = rpn
+        self.variables = {}
+        self.parseVariables()
 
+        self.lastEvaluation = None
+        self.unresolvedEval = ""
+        self.resolved = True
+        return self
+    # Complete deprecation
     def evaluate(self,exp=None):
         print("WARNING: This version of the evaluation engine is being deprecated and will not work with default parsed expressions. Use alternateEval unless you know what you are doing.")
         return
@@ -296,11 +314,8 @@ class RPN:
             print("Calculation error!")
         self.lastEvaluation = float(output)
 
+    # Override the evaluate method
+    evaluate = alternateEval
 
     def __str__(self):
-        return self.infix + " , [" + self.rpn + "]"
-
-e = RPN("sin(90) - 1")
-print(e.rpn)
-e.alternateEval()
-print(e.lastEvaluation)
+        return self.infix + " , [" + str(self.rpn) + "]"

@@ -1,5 +1,5 @@
 # This file is mainly for quick use of the calculator and testing edge cases quickly
-from rpn import RPN
+from rpn import Expression as RPN
 
 while True:
     exp = input("Enter an expression: ")

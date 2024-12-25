@@ -1,6 +1,6 @@
 import unittest
 import asyncio
-from rpn import RPN
+from rpn import Expression
 from math import sin,tan,cos,radians
 
 
@@ -77,26 +77,25 @@ class TestParser(unittest.TestCase):
     def testParser(self):
         print("Testing Parser")
         for k,v in self.infix_to_rpn.items():
-            e = RPN(k)
+            e = Expression(k)
             self.assertEqual(e.rpn,v)
     def testEval(self):
         print("Testing Evaluations`")
         for k,v in self.infix_to_result.items():
-            e = RPN(k)
+            e = Expression(k)
             print(e.rpn)
             print(f"Evaluating {k}")
             e.alternateEval()
             self.assertAlmostEqual(e.lastEvaluation,v,4)
     def testVar(self):
         for infix in self.variable_test_cases:
-            e = RPN(infix[0])
+            e = Expression(infix[0])
             e.variables = infix[1]
-            e.alternateEval()
             print(f"Evaluating with variable {infix[0]}")
+            e.alternateEval()
+            print(e.unresolvedEval)
             self.assertAlmostEqual(e.lastEvaluation,infix[2])
         
 
 if __name__ == "__main__":
     unittest.main()
-
-# Write a function to print hello world
