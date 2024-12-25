@@ -177,8 +177,8 @@ class Expression:
                 constStack.append(i)
             elif isOperator(i) == 0 or isFunction(i):
                 if len(constStack) == 0:
-                    print("Calculation error.")
-                    self.lastEvaluation = None
+                    output.append(i)
+                    self.resolved = False
                     return
                 elif len(constStack) == 1 and not isFunction(i):
                     output += constStack
@@ -253,67 +253,7 @@ class Expression:
         self.unresolvedEval = ""
         self.resolved = True
         return self
-    # Complete deprecation
-    def evaluate(self,exp=None):
-        print("WARNING: This version of the evaluation engine is being deprecated and will not work with default parsed expressions. Use alternateEval unless you know what you are doing.")
-        return
-        if exp == None:
-            exp = self.rpn
-        constStack = []
-        temp = ""
-        output = ""
-        numberBuffer = ""
-        for i in exp:
-            
-            n = len(constStack)-1
-            temp += i
-            if n+1 >= 2:
-                None
-            if isOperator(i) == 1:# Append constants
-                if i.isalpha() == False and i != "":
-                    if i == " " and numberBuffer != "":
-                        constStack.append(numberBuffer)
-                        numberBuffer = ""
-                    elif i != " ":
-                        numberBuffer += i
-                elif i.isalpha() and i != " ":
-                    constStack.append(i)
-            elif isOperator(i) == 0:
-                if (len(constStack) < 2) and numberBuffer == "": # Not enough variables to compute, thus add these to the output as well
-                    output += " " +  " ".join(constStack) + " " + numberBuffer + i
-                    temp = ""
-                    numberBuffer = ""
-                    constStack = []
-                    continue
-                elif (len(constStack)<2) and numberBuffer != "":
-                    output += " ".join(constStack) + numberBuffer 
-                    numberBuffer = ""
-                    continue
-                x = constStack[n-1] 
-                y = constStack[n]
-                if self.variables.get(x) != None:
-                    x = self.variables.get(x)
-                if self.variables.get(y) != None:
-                    y = self.variables.get(y)
-                if x.isalpha() or y.isalpha():
-                    output += " ".join(constStack) + " " + i # Add the buffer to the output variable as this cant be computed for now
-                    temp = ""
-                    # constStack.pop()
-                    # constStack.pop()
-                    constStack = []
-                    continue
-                res = performBasic(x,y,i)
-                # Clear the used constants from the stack
-                temp = " ".join(constStack) + " " + str(res) + " "
-                constStack.pop()
-                constStack.pop()
-                constStack.append(res)
-        if  len(constStack) == 1: # Merge the uncomputed with the computed values
-            output += " " + constStack[0]
-        elif len(constStack) > 1:
-            print("Calculation error!")
-        self.lastEvaluation = float(output)
-
+    
     # Override the evaluate method
     evaluate = alternateEval
 

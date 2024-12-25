@@ -29,9 +29,11 @@ class Equation():
         for i in range(len(expList)):
             if len(expList[i]) == 1 or len(expList[i]) == 0:
                 continue
-            print(i,expList[i])
             op1 = expList[i][len(expList[i])-1]
             for j in range(i+1,len(expList)):
+                if len(expList[j]) == 1 or len(expList[j]) == 0:
+                    continue
+                print(j,expList[j])
                 op2 = expList[j][len(expList[j])-1]
                 if compare_precedence(op1,op2) == 0:
                     for k in range(len(expList[i])):
@@ -41,7 +43,6 @@ class Equation():
                                 continue
 
                             while len(expList[j]) > 0 :
-                                print(expList[j][len(expList[j])-1])
                                 expList[i].insert(k+1,expList[j].pop())
         return expList
     def resolveList(self,expList:list[list[str]]):
@@ -67,7 +68,7 @@ class Equation():
     def __str__(self):
         return f"{self.exp1.infix} = {self.exp2.infix}"
 
-a=Equation(Expression("9 / x ^ 2 + 3"),Expression("2+x"))
+a=Equation(Expression("5 + x + 3 + x + 2 + x"),Expression("2+x"))
 print(a)
 l = a.seperate(a.exp1)
 print(l)
